@@ -53,19 +53,46 @@ public class ConexionDB {
         }
     }
     
-    // Método que muestra por pantalla los resultados de una consulta
+    // Método que muestra por pantalla el resultado de una consulta
     public void lanzaConsulta(Connection conn) {
-        
+            
             try {
                 
                 Statement stmnt = conn.createStatement();
                 
                 ResultSet rs = stmnt.executeQuery("Select * from videojuegos");
                 while(rs.next()){
+                    //Añadiria mas campos como en el de buscaNombre 
                     System.out.println("ID: "+rs.getString("id")+ " Nombre: "+rs.getString("nombre"));
                 }
             } catch (SQLException ex) {
                 System.out.println("ERROR : "+ex.getMessage());
+                cerrarConexion(conn);
+            }
+        
+    }
+    
+    // Método que muestra por pantalla los resultados de una consulta
+    public void buscaNombre(Connection conexion, String nombre) {
+        
+            try {
+                //Preparamos las consultas
+                String insercion = "SELECT * from videojuegos where nombre = ?";
+                PreparedStatement sentencia = conexion.prepareStatement(insercion);
+                sentencia.setString(1, nombre);
+                
+                //Ejecutamos la consulta y recogemos los datos resultados
+                ResultSet rs = sentencia.executeQuery();
+                
+                //Mostramos los datos
+                while(rs.next()){
+                    System.out.println("ID: "+rs.getString("id")+ " Nombre: "+rs.getString("nombre")
+                            + " Genero: "+rs.getString("genero")+ " Fecha Lanzamiento : "+rs.getString("fechalanzamiento")
+                            + " Compañia: "+rs.getString("compania")+ " Precio: "+rs.getString("precio"));
+                }
+            } catch (SQLException ex) {
+                System.out.println("ERROR : "+ex.getMessage());
+                cerrarConexion(conexion);
             }
         
     }
@@ -109,6 +136,7 @@ public class ConexionDB {
             // Manejar la excepción en caso de error de la consulta
             System.out.println("Error al insertar usuario: " + ex.getMessage());
             ex.printStackTrace(); // Esto imprime la traza de la excepción para obtener más detalles
+            cerrarConexion(conexion);
             return false; // Indicar que la operación falló
         }
     }
@@ -147,6 +175,7 @@ public class ConexionDB {
             return true;
         }catch(SQLException s){
             System.out.println("Error al intentar eliminar traza: "+s.getMessage());
+            cerrarConexion(conexion);
             return false; // No se encontró el videojuego con el nombre especificado
         }
     }

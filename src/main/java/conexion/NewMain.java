@@ -20,6 +20,8 @@ public class NewMain {
         ConexionDB con = new ConexionDB();
         Connection conn = con.obtenerConexion();
         //con.nuevoRegistroDesdeTeclado();
+        //Buscar un dato en especifico
+        con.buscaNombre(conn, "sad");
         //Mostrar todo
         con.lanzaConsulta(conn);
         //con.cerrarConexion(conn);
