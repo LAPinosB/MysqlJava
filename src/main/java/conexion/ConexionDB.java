@@ -10,10 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -56,17 +53,6 @@ public class ConexionDB {
         }
     }
     
-    ArrayList<Videojuego> videojuegos = new ArrayList<>();
-    public boolean buscaNombre(String nombre){
-        for (Videojuego juego : videojuegos) {
-            if (juego.getNombre().equals(nombre)) {
-                
-                return true; // El nombre existe en la tabla
-            }
-        }
-        return false; // El nombre no existe en la tabla
-    }
-    
     // Método que muestra por pantalla los resultados de una consulta
     public void lanzaConsulta(Connection conn) {
         
@@ -83,6 +69,8 @@ public class ConexionDB {
             }
         
     }
+    
+    //HE PROBADO LO VISTO EN CLASE QUE PONIEN / * * NOS HACE AUTOMATICAMENTE PARTES PARA EL JAVADOC
     /**
      * 
      * @param conexion
@@ -93,10 +81,12 @@ public class ConexionDB {
      * @param precio
      * @return Devolvemos si es true
      */
-    //Private porque por el momento solo quiero acceder para introducir nuevos juegos desde Scanner
+    
+    //Private porque por el momento solo quiero acceder para introducir nuevos juegos desde Scanner, si quisiera añadir desde el main pasando
+    //parametros lo pondria public
     private boolean nuevoRegistro(Connection conexion, String nombre, String genero, String anioLanzamiento,String compania, double precio ) {
         Videojuego nuevoJuego = new Videojuego(nombre, genero, anioLanzamiento,compania,precio);
-        videojuegos.add(nuevoJuego);
+
         try {
             // Realizar operaciones con la conexión , IMPORTANTE; SI NO PONEMOS (USERNAME, PASSWORD) Y PONEMOS DIRECTAMENTE
             //VALUES TENEMOS QUE ESPECIFICAR EN EL CAMPO DE ID(NULL,?,?,?...) POR EJEMPLO. (nombre, genero,fechalanzamiento,compania,precio) 
@@ -126,19 +116,19 @@ public class ConexionDB {
     public void nuevoRegistroDesdeTeclado() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Ingrese el nombre del videojuego:");
+        System.out.println("Ingresa el nombre del videojuego:");
         String nombre = scanner.nextLine();
 
-        System.out.println("Ingrese el género del videojuego:");
+        System.out.println("Ingresa el género del videojuego:");
         String genero = scanner.nextLine();
 
-        System.out.println("Ingrese el año de lanzamiento del videojuego:");
+        System.out.println("Ingresa el año de lanzamiento del videojuego (yyyy/mm/dd):");
         String anioLanzamiento = scanner.nextLine();
         
-        System.out.println("Ingrese la compañia del videojuego:");
+        System.out.println("Ingresa la compañia del videojuego:");
         String compania = scanner.nextLine();
         
-        System.out.println("Ingrese el precio del videojuego:");
+        System.out.println("Ingresa el precio del videojuego: (101,20 example)");
         double precio = scanner.nextDouble();
         
         Connection conn = obtenerConexion();
@@ -146,15 +136,18 @@ public class ConexionDB {
         nuevoRegistro(conn,nombre, genero, anioLanzamiento,compania,precio);
     }
     
-    // Método que elimina un videojuego con el nombre pasado como parámetro
+    // Método que elimina un videojuego con el nombre,genero y la conexion pasado como parámetro
     // Devuelve true si la eliminación fue exitosa
-    public boolean eliminarRegistro(String nombre) {
-        for (Videojuego juego : videojuegos) {
-            if (juego.getNombre().equals(nombre)) {
-                videojuegos.remove(juego);
-                return true; // Eliminación exitosa
-            }
+    public boolean eliminarRegistro(Connection conexion,String nombre, String genero) {
+        try{
+            String insercion = "DELETE from videojuegos WHERE nombre = ? AND genero = ? ";
+            PreparedStatement sentencia = conexion.prepareStatement(insercion);
+            sentencia.setString(1,nombre);
+            sentencia.setString(2,genero);
+            return true;
+        }catch(SQLException s){
+            System.out.println("Error al intentar eliminar traza: "+s.getMessage());
+            return false; // No se encontró el videojuego con el nombre especificado
         }
-        return false; // No se encontró el videojuego con el nombre especificado
     }
 }
