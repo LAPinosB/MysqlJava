@@ -19,6 +19,7 @@ public class ConexionDB {
     private static final String URL = "jdbc:mysql://localhost:3307/ecuamayferrr";
     private static final String USUARIO = "root";
     private static final String CONTRASENA = "admin";
+    static final String QUERY = "SELECT * FROM videojuegos";
 
     // Método para obtener una conexión a la base de datos
     public static Connection obtenerConexion() {
@@ -54,6 +55,7 @@ public class ConexionDB {
     public boolean buscaNombre(String nombre){
         for (Videojuego juego : videojuegos) {
             if (juego.getNombre().equals(nombre)) {
+                
                 return true; // El nombre existe en la tabla
             }
         }

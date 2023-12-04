@@ -17,8 +17,8 @@ public class NewMain {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        //ConexionDB con = new ConexionDB();
-        //Connection conn = con.obtenerConexion();
+        ConexionDB con = new ConexionDB();
+        Connection conn = con.obtenerConexion();
         //con.cerrarConexion(conn);
         
     }
