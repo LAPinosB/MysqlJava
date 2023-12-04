@@ -6,9 +6,14 @@ package conexion;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -22,7 +27,7 @@ public class ConexionDB {
     static final String QUERY = "SELECT * FROM videojuegos";
 
     // Método para obtener una conexión a la base de datos
-    public static Connection obtenerConexion() {
+    public Connection obtenerConexion() {
         Connection conexion = null;
         try {
             // Cargar el controlador JDBC
@@ -63,19 +68,60 @@ public class ConexionDB {
     }
     
     // Método que muestra por pantalla los resultados de una consulta
-    public void lanzaConsulta(String consulta) {
-        for (Videojuego juego : videojuegos) {
-            // Supongamos que cada videojuego tiene un método toString() que devuelve su información
-            System.out.println(juego.toString());
+    public void lanzaConsulta(Connection conn) {
+        
+            try {
+                
+                Statement stmnt = conn.createStatement();
+                
+                ResultSet rs = stmnt.executeQuery("Select * from videojuegos");
+                while(rs.next()){
+                    System.out.println("ID: "+rs.getString("id")+ " Nombre: "+rs.getString("nombre"));
+                }
+            } catch (SQLException ex) {
+                System.out.println("ERROR : "+ex.getMessage());
+            }
+        
+    }
+    /**
+     * 
+     * @param conexion
+     * @param nombre
+     * @param genero
+     * @param anioLanzamiento
+     * @param compania
+     * @param precio
+     * @return Devolvemos si es true
+     */
+    //Private porque por el momento solo quiero acceder para introducir nuevos juegos desde Scanner
+    private boolean nuevoRegistro(Connection conexion, String nombre, String genero, String anioLanzamiento,String compania, double precio ) {
+        Videojuego nuevoJuego = new Videojuego(nombre, genero, anioLanzamiento,compania,precio);
+        videojuegos.add(nuevoJuego);
+        try {
+            // Realizar operaciones con la conexión , IMPORTANTE; SI NO PONEMOS (USERNAME, PASSWORD) Y PONEMOS DIRECTAMENTE
+            //VALUES TENEMOS QUE ESPECIFICAR EN EL CAMPO DE ID(NULL,?,?,?...) POR EJEMPLO. (nombre, genero,fechalanzamiento,compania,precio) 
+            String insercion = "INSERT INTO videojuegos VALUES (NULL,?,?,?,?,?)";
+            PreparedStatement sentencia = conexion.prepareStatement(insercion);
+            sentencia.setString(1, nuevoJuego.getNombre());
+            sentencia.setString(2, nuevoJuego.getGenero());
+            sentencia.setString(3, nuevoJuego.getAnioLanzamiento());
+            sentencia.setString(4, nuevoJuego.getCompania());
+            sentencia.setDouble(5, nuevoJuego.getPrecio());
+
+            // Ejecutar la inserción
+            int filasAfectadas = sentencia.executeUpdate();
+            
+            System.out.println("Se ha añadido el videojuego correctamente desde java");
+            // Verificar si la inserción fue exitosa (al menos una fila afectada)
+            return filasAfectadas > 0;
+
+        } catch (SQLException ex) {
+            // Manejar la excepción en caso de error de la consulta
+            System.out.println("Error al insertar usuario: " + ex.getMessage());
+            ex.printStackTrace(); // Esto imprime la traza de la excepción para obtener más detalles
+            return false; // Indicar que la operación falló
         }
     }
-    
-    // Método que crea un nuevo videojuego en la tabla con los datos pasados como parámetro
-    public void nuevoRegistro(String nombre, String genero, int anioLanzamiento) {
-        Videojuego nuevoJuego = new Videojuego(nombre, genero, anioLanzamiento);
-        videojuegos.add(nuevoJuego);
-    }
-    
     // Método que crea un nuevo videojuego en la tabla con los datos pedidos al usuario por teclado
     public void nuevoRegistroDesdeTeclado() {
         Scanner scanner = new Scanner(System.in);
@@ -87,9 +133,17 @@ public class ConexionDB {
         String genero = scanner.nextLine();
 
         System.out.println("Ingrese el año de lanzamiento del videojuego:");
-        int anioLanzamiento = scanner.nextInt();
+        String anioLanzamiento = scanner.nextLine();
+        
+        System.out.println("Ingrese la compañia del videojuego:");
+        String compania = scanner.nextLine();
+        
+        System.out.println("Ingrese el precio del videojuego:");
+        double precio = scanner.nextDouble();
+        
+        Connection conn = obtenerConexion();
 
-        nuevoRegistro(nombre, genero, anioLanzamiento);
+        nuevoRegistro(conn,nombre, genero, anioLanzamiento,compania,precio);
     }
     
     // Método que elimina un videojuego con el nombre pasado como parámetro

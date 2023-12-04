@@ -19,6 +19,9 @@ public class NewMain {
         // TODO code application logic here
         ConexionDB con = new ConexionDB();
         Connection conn = con.obtenerConexion();
+        //con.nuevoRegistroDesdeTeclado();
+        //Mostrar todo
+        con.lanzaConsulta(conn);
         //con.cerrarConexion(conn);
         
     }
